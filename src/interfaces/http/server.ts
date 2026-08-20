@@ -1,13 +1,11 @@
 import express, { Express } from 'express';
+import { env } from '../../infra/config/env';
 import { Container } from '../../infra/container';
 import { errorHandler } from './middlewares/errorHandler';
 import { invoiceRoutes } from './routes/invoiceRoutes';
 import { paymentRoutes } from './routes/paymentRoutes';
 
-const allowedOrigins = new Set([
-  'https://ergane-modulo-pagamento.vercel.app',
-  'http://localhost:5173',
-]);
+const allowedOrigins = new Set(env.ALLOWED_ORIGINS);
 
 export function createApp(container: Container): Express {
   const app = express();
