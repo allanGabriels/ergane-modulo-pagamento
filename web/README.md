@@ -36,7 +36,9 @@ npm run dev
 ```
 
 Abra <http://localhost:5173>. Para apontar para outro back-end:
-`API_URL=http://outro-host:3000 npm run dev`.
+`VITE_API_URL=http://outro-host:3000 npm run dev`.
+
+No Vercel, configure `VITE_API_URL=https://modulo-pagamento-ia.onrender.com`.
 
 ```bash
 npm run build      # tsc --noEmit && vite build
