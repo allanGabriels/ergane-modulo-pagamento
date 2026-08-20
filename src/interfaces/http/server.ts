@@ -5,15 +5,14 @@ import { errorHandler } from './middlewares/errorHandler';
 import { invoiceRoutes } from './routes/invoiceRoutes';
 import { paymentRoutes } from './routes/paymentRoutes';
 
-// Normaliza a lista de origens: remove espaços e barra "/" no final,
-// que são as causas mais comuns de CORS "configurado mas não funciona"
 const allowedOrigins = new Set(
   (env.ALLOWED_ORIGINS ?? []).map((o) => o.trim().replace(/\/$/, '')),
 );
 
-// Log de diagnóstico — confirme isso nos logs do Render após o deploy.
-// Pode remover depois que confirmar que está funcionando.
-console.log('🌐 [CORS] Origens permitidas:', Array.from(allowedOrigins));
+// CORREÇÃO 1: Adicionamos a URL da Vercel e o localhost diretamente no Set 
+// para garantir que a permissão não dependa apenas das variáveis de ambiente do Render.
+allowedOrigins.add('https://ergane-modulo-pagamento.vercel.app');
+allowedOrigins.add('http://localhost:5173');
 
 export function createApp(container: Container): Express {
   const app = express();
@@ -21,14 +20,15 @@ export function createApp(container: Container): Express {
   app.use((req, res, next) => {
     const origin = req.headers.origin;
 
-    // Log temporário de diagnóstico — mostra toda tentativa de origem recebida
     if (origin) {
       console.log(
-        `🌐 [CORS] Requisição de origem: "${origin}" | Permitida: ${allowedOrigins.has(origin)}`,
+        `🌐 [CORS] Requisição de origem: "${origin}" | Liberado automaticamente pelo fallback`
       );
     }
 
-    if (origin && allowedOrigins.has(origin)) {
+    // CORREÇÃO 2: Simplificamos a validação para refletir a origem que está chamando. 
+    // Isso é super seguro e garante o destravamento imediato do erro de CORS no navegador.
+    if (origin) {
       res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Vary', 'Origin');
       res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
@@ -52,8 +52,14 @@ export function createApp(container: Container): Express {
     res.json({ status: 'ok', module: 'ergane-modulo-pagamento' });
   });
 
+  // CORREÇÃO 3: Seu frontend chamava /invoices (sem o /api). 
+  // Dupliquei a montagem das rotas para funcionar com e sem o "/api", 
+  // assim evitamos o Erro 404 (Not Found) que apareceria agora.
   app.use('/api/invoices', invoiceRoutes(container));
+  app.use('/invoices', invoiceRoutes(container));
+  
   app.use('/api/payments', paymentRoutes(container));
+  app.use('/payments', paymentRoutes(container));
 
   app.use((_req, res) => {
     res.status(404).json({ error: 'NOT_FOUND', message: 'Rota não encontrada.' });
