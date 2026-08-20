@@ -5,13 +5,28 @@ import { errorHandler } from './middlewares/errorHandler';
 import { invoiceRoutes } from './routes/invoiceRoutes';
 import { paymentRoutes } from './routes/paymentRoutes';
 
-const allowedOrigins = new Set(env.ALLOWED_ORIGINS);
+// Normaliza a lista de origens: remove espaços e barra "/" no final,
+// que são as causas mais comuns de CORS "configurado mas não funciona"
+const allowedOrigins = new Set(
+  (env.ALLOWED_ORIGINS ?? []).map((o) => o.trim().replace(/\/$/, '')),
+);
+
+// Log de diagnóstico — confirme isso nos logs do Render após o deploy.
+// Pode remover depois que confirmar que está funcionando.
+console.log('🌐 [CORS] Origens permitidas:', Array.from(allowedOrigins));
 
 export function createApp(container: Container): Express {
   const app = express();
 
   app.use((req, res, next) => {
     const origin = req.headers.origin;
+
+    // Log temporário de diagnóstico — mostra toda tentativa de origem recebida
+    if (origin) {
+      console.log(
+        `🌐 [CORS] Requisição de origem: "${origin}" | Permitida: ${allowedOrigins.has(origin)}`,
+      );
+    }
 
     if (origin && allowedOrigins.has(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
