@@ -9,7 +9,7 @@ export default defineConfig({
     // para o módulo de pagamentos.
     proxy: {
       '/api': {
-        target: process.env.API_URL ?? 'https://modulo-pagamento-ia.onrender.com',
+        target: process.env.API_URL ?? 'https://ergane-modulo-pagamento-1.onrender.com',
         changeOrigin: true,
       },
     },

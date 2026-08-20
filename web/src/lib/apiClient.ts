@@ -9,7 +9,7 @@ import type {
 
 const BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ??
-  'https://modulo-pagamento-ia.onrender.com';
+  'https://ergane-modulo-pagamento-1.onrender.com';
 
 /** Erro de API já traduzido: carrega status HTTP, código e detalhes de validação. */
 export class ApiError extends Error {
